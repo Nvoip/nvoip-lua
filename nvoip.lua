@@ -46,7 +46,6 @@ function Client:new(config)
   config = config or {}
   return setmetatable({
     base_url = (config.base_url or "https://api.nvoip.com.br/v2"):gsub("/+$", ""),
-    oauth_basic_auth = config.oauth_basic_auth,
     oauth_client_id = config.oauth_client_id,
     oauth_client_secret = config.oauth_client_secret,
   }, self)
@@ -57,15 +56,11 @@ function Client.encode_basic_auth(client_id, client_secret)
 end
 
 function Client:_resolve_basic_auth()
-  if self.oauth_basic_auth and self.oauth_basic_auth ~= "" then
-    return self.oauth_basic_auth
-  end
-
   if self.oauth_client_id and self.oauth_client_id ~= "" and self.oauth_client_secret and self.oauth_client_secret ~= "" then
     return Client.encode_basic_auth(self.oauth_client_id, self.oauth_client_secret)
   end
 
-  error("Missing OAuth client credentials. Configure oauth_basic_auth or oauth_client_id + oauth_client_secret.", 2)
+  error("Missing OAuth client credentials. Configure oauth_client_id + oauth_client_secret.", 2)
 end
 
 function Client:create_access_token(numbersip, user_token)

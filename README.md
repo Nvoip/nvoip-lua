@@ -32,12 +32,6 @@ export NVOIP_TARGET_NUMBER="11999999999"
 export NVOIP_SMS_MESSAGE="Mensagem de teste Nvoip"
 ```
 
-Se preferir manter um `basic auth` ja serializado, envie apenas pela variavel:
-
-```bash
-export NVOIP_OAUTH_BASIC_AUTH="basic_auth_base64"
-```
-
 ## Exemplos
 
 Enviar SMS:
