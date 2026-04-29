@@ -1,6 +1,6 @@
 # nvoip-lua
 
-Cliente Lua simples para a API v2 da Nvoip.
+Cliente Lua simples para a API v2 da Nvoip, com foco nos fluxos principais de autenticacao, ligacoes, OTP e WhatsApp.
 
 ## Requisitos
 
@@ -12,16 +12,30 @@ Pacotes recomendados via LuaRocks:
 ## Fluxos cobertos
 
 - gerar `access_token`
+- renovar token
 - consultar saldo
 - enviar SMS
+- realizar chamada
+- enviar OTP
+- validar OTP
+- listar templates de WhatsApp
+- enviar template de WhatsApp
 
 ## Configuração
 
 ```bash
 export NVOIP_NUMBERSIP="seu_numbersip"
 export NVOIP_USER_TOKEN="seu_user_token"
+export NVOIP_OAUTH_CLIENT_ID="seu_client_id"
+export NVOIP_OAUTH_CLIENT_SECRET="seu_client_secret"
 export NVOIP_TARGET_NUMBER="11999999999"
 export NVOIP_SMS_MESSAGE="Mensagem de teste Nvoip"
+```
+
+Se preferir manter um `basic auth` ja serializado, envie apenas pela variavel:
+
+```bash
+export NVOIP_OAUTH_BASIC_AUTH="basic_auth_base64"
 ```
 
 ## Exemplos
@@ -38,9 +52,47 @@ Consultar saldo:
 lua examples/get_balance.lua
 ```
 
+Gerar `access_token`:
+
+```bash
+lua examples/create_access_token.lua
+```
+
+Criar chamada:
+
+```bash
+lua examples/create_call.lua
+```
+
+Enviar OTP:
+
+```bash
+lua examples/send_otp.lua
+```
+
+Validar OTP:
+
+```bash
+lua examples/check_otp.lua
+```
+
+Listar templates de WhatsApp:
+
+```bash
+lua examples/list_whatsapp_templates.lua
+```
+
+Enviar template de WhatsApp:
+
+```bash
+lua examples/send_whatsapp_template.lua
+```
+
 ## Onde este repositório ajuda mais
 
 Lua é especialmente útil em cenários de automação e telefonia embarcada, como integrações com serviços e middlewares que já usam scripts leves para orquestração.
+
+Para o fluxo de popup de telefone + codigo no navegador, use em conjunto o repositório `nvoip-web-sdk`.
 
 ## Documentação oficial
 
