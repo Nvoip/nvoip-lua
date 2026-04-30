@@ -7,17 +7,17 @@ source = {
 }
 
 description = {
-  summary = "SDK Lua oficial para a API v2 da Nvoip",
-  detailed = [[Cliente Lua para integrar OAuth, chamadas, OTP, WhatsApp, SMS e saldo com a API v2 da Nvoip.]],
+  summary = "Lua SDK and examples for the Nvoip API v2",
+  detailed = "Official Lua SDK for Nvoip API v2 with OAuth, calls, OTP, WhatsApp templates, SMS, and balance helpers.",
   homepage = "https://www.nvoip.com.br/",
-  license = "GPL-3.0-only"
+  license = "GPL-3.0"
 }
 
 dependencies = {
   "lua >= 5.1",
-  "luasec >= 1.0.0",
-  "luasocket >= 3.0.0",
-  "lua-cjson >= 2.1.0"
+  "lua-cjson",
+  "luasec",
+  "luasocket"
 }
 
 build = {
