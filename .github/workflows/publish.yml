@@ -1,0 +1,19 @@
+name: Publish package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  luarocks:
+    name: Publish to LuaRocks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y lua5.4 luarocks
+      - run: luarocks lint nvoip-0.1.0-1.rockspec
+      - run: luarocks upload --api-key "$LUAROCKS_API_KEY" nvoip-0.1.0-1.rockspec
+        env:
+          LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}

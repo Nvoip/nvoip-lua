@@ -11,6 +11,12 @@ Pacotes recomendados via LuaRocks:
 - `luasec`
 - `lua-cjson`
 
+## Instalacao
+
+```bash
+luarocks install nvoip
+```
+
 ## Fluxos cobertos
 
 - gerar `access_token`
