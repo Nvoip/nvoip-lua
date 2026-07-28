@@ -154,10 +154,39 @@ end
 function Client:send_whatsapp_template(options)
   local payload = {
     idTemplate = options.id_template,
-    destination = options.destination,
     instance = options.instance,
     language = options.language,
   }
+  local recipient = options.recipient
+  if recipient ~= nil then
+    local recipient_type = string.lower(recipient.type or "")
+    local recipient_value = recipient.value or ""
+    if recipient_type ~= "phone" and recipient_type ~= "bsuid" and recipient_type ~= "parent_bsuid" then
+      error("recipient.type must be phone, bsuid or parent_bsuid", 2)
+    end
+    if recipient_value == "" or string.sub(recipient_value, 1, 1) == "@" then
+      error("recipient.value is required and @username is not accepted", 2)
+    end
+    local recipient_digits = string.gsub(recipient_value, "^%+", "")
+    if recipient_type == "phone"
+        and (not string.match(recipient_digits, "^%d+$") or #recipient_digits < 8 or #recipient_digits > 20) then
+      error("a phone recipient must contain only an optional leading + and 8 to 20 digits", 2)
+    end
+    if recipient_type ~= "phone" and (string.match(recipient_value, "%s") or #recipient_value > 256) then
+      error("a BSUID must be an opaque value without whitespace (maximum 256 characters)", 2)
+    end
+    if options.to_flow and recipient_type ~= "phone" then
+      error("WhatsApp Flow and attendance require a phone recipient", 2)
+    end
+    payload.recipient = { type = recipient_type, value = recipient_value }
+  else
+    local destination = options.destination or ""
+    local phone_digits = string.gsub(destination, "^%+", "")
+    if not string.match(phone_digits, "^%d+$") or #phone_digits < 8 or #phone_digits > 20 then
+      error("destination must be a phone number; use recipient for BSUID", 2)
+    end
+    payload.destination = options.destination
+  end
 
   if options.body_variables ~= nil then
     payload.bodyVariables = options.body_variables

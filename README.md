@@ -90,6 +90,14 @@ Enviar template de WhatsApp:
 lua examples/send_whatsapp_template.lua
 ```
 
+### Destinatário WhatsApp
+
+O exemplo mantém `NVOIP_WA_DESTINATION` para telefone. Para o contrato tipado,
+use `NVOIP_WA_RECIPIENT_TYPE=phone|bsuid|parent_bsuid` e
+`NVOIP_WA_RECIPIENT_VALUE`, sem `destination`. BSUID é opaco; não use
+`@username` nem o coloque em campo de telefone. Exemplos mascarados:
+`US.MASKED_BSUID_001` e `PARENT.MASKED_BSUID_001`.
+
 ## Onde este repositório ajuda mais
 
 Lua é especialmente útil em cenários de automação e telefonia embarcada, como integrações com serviços e middlewares que já usam scripts leves para orquestração.
