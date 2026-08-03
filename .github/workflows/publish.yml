@@ -4,6 +4,12 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish to LuaRocks after validation
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -11,13 +17,15 @@ permissions:
 jobs:
   luarocks:
     name: Publish to LuaRocks
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, nvoip-ci-public-release]
     steps:
       - uses: actions/checkout@v4
       - uses: leafo/gh-actions-lua@v11
         with:
           luaVersion: "5.4"
       - uses: leafo/gh-actions-luarocks@v5
-      - run: luarocks upload *.rockspec --api-key="$LUAROCKS_API_KEY"
+      - run: luarocks make --local
+      - if: github.event_name == 'release' || inputs.publish
+        run: luarocks upload *.rockspec --api-key="$LUAROCKS_API_KEY"
         env:
           LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
