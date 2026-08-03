@@ -17,10 +17,7 @@ permissions:
 jobs:
   luarocks:
     name: Publish to LuaRocks
-    runs-on:
-      - codebuild-nvoip-ci-public-release-${{ github.run_id }}-${{ github.run_attempt }}
-      - organization-registration-name:Nvoip
-      - registration-group-id:4
+    runs-on: [self-hosted, Linux, X64, nvoip-ci-public-release]
     steps:
       - uses: actions/checkout@v4
       - uses: leafo/gh-actions-lua@v11
