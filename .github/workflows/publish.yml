@@ -24,6 +24,8 @@ jobs:
         with:
           luaVersion: "5.4"
       - uses: leafo/gh-actions-luarocks@v5
+        with:
+          luaRocksVersion: "3.13.0"
       - run: luarocks make --local
       - if: github.event_name == 'release' || inputs.publish
         run: luarocks upload *.rockspec --api-key="$LUAROCKS_API_KEY"
