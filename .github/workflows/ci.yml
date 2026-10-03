@@ -16,6 +16,8 @@ jobs:
         with:
           luaVersion: "5.4"
       - uses: leafo/gh-actions-luarocks@v5
+        with:
+          luaRocksVersion: "3.13.0"
       - run: lua -e "assert(loadfile('nvoip.lua'))"
       - run: for file in examples/*.lua; do lua -e "assert(loadfile('$file'))"; done
       - run: lua tests/transport.lua
