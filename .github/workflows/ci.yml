@@ -18,3 +18,4 @@ jobs:
       - uses: leafo/gh-actions-luarocks@v5
       - run: lua -e "assert(loadfile('nvoip.lua'))"
       - run: for file in examples/*.lua; do lua -e "assert(loadfile('$file'))"; done
+      - run: lua tests/transport.lua
