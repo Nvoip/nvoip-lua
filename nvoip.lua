@@ -135,8 +135,8 @@ function Client:send_otp(options)
   })
 end
 
-function Client:check_otp(code, key)
-  return self:_request("GET", "/check/otp?code=" .. urlencode(code) .. "&key=" .. urlencode(key), {})
+function Client:check_otp(access_token, code, key)
+  return self:_request("GET", "/check/otp?code=" .. urlencode(code) .. "&key=" .. urlencode(key), { access_token = access_token })
 end
 
 function Client:list_whatsapp_templates(access_token)
