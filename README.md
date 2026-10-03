@@ -1,8 +1,8 @@
 # nvoip-lua
 
-[![CI](https://github.com/Nvoip/nvoip-lua/actions/workflows/ci.yml/badge.svg)](https://github.com/Nvoip/nvoip-lua/actions/workflows/ci.yml) [![LuaRocks](https://img.shields.io/luarocks/v/nvoip/nvoip?style=flat-square)](https://luarocks.org/modules/nvoip/nvoip) [![LuaRocks downloads](https://img.shields.io/luarocks/dt/nvoip/nvoip?style=flat-square)](https://luarocks.org/modules/nvoip/nvoip) [![Nvoip](https://img.shields.io/badge/Nvoip-site-00A3E0?style=flat-square)](https://www.nvoip.com.br/) [![API v2](https://img.shields.io/badge/API-v2-1F6FEB?style=flat-square)](https://www.nvoip.com.br/api/) [![Docs](https://img.shields.io/badge/docs-Apiary-6A737D?style=flat-square)](https://nvoip.docs.apiary.io/) [![Postman](https://img.shields.io/badge/Postman-workspace-FF6C37?style=flat-square)](https://nvoip-api.postman.co/workspace/e671d01f-168a-4c38-8d0e-c217229dd61a/team-quickstart) [![Stack](https://img.shields.io/badge/stack-Lua-000080?style=flat-square)](https://github.com/Nvoip/nvoip-api-examples) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square)](LICENSE)
+[![CI](https://github.com/Nvoip/nvoip-lua/actions/workflows/ci.yml/badge.svg)](https://github.com/Nvoip/nvoip-lua/actions/workflows/ci.yml) [![LuaRocks](https://img.shields.io/luarocks/v/nvoip/nvoip?style=flat-square)](https://luarocks.org/modules/nvoip/nvoip) [![LuaRocks downloads](https://img.shields.io/luarocks/dt/nvoip/nvoip?style=flat-square)](https://luarocks.org/modules/nvoip/nvoip) [![Nvoip](https://img.shields.io/badge/Nvoip-site-00A3E0?style=flat-square)](https://www.nvoip.com.br/) [![API v3](https://img.shields.io/badge/API-v3-1F6FEB?style=flat-square)](https://www.nvoip.com.br/api/) [![Docs](https://img.shields.io/badge/docs-Apiary-6A737D?style=flat-square)](https://nvoip.docs.apiary.io/) [![Postman](https://img.shields.io/badge/Postman-workspace-FF6C37?style=flat-square)](https://nvoip-api.postman.co/workspace/e671d01f-168a-4c38-8d0e-c217229dd61a/team-quickstart) [![Stack](https://img.shields.io/badge/stack-Lua-000080?style=flat-square)](https://github.com/Nvoip/nvoip-api-examples) [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square)](LICENSE)
 
-SDK e exemplos oficiais da [Nvoip](https://www.nvoip.com.br/) para integrar a API v2 com OAuth, chamadas, OTP, WhatsApp, SMS e saldo em Lua.
+SDK e exemplos oficiais da [Nvoip](https://www.nvoip.com.br/) para integrar a API v3 com OAuth, chamadas, OTP, WhatsApp, SMS e saldo em Lua.
 
 ## Requisitos
 
@@ -32,8 +32,6 @@ luarocks install nvoip
 ## Configuração
 
 ```bash
-export NVOIP_NUMBERSIP="seu_numbersip"
-export NVOIP_USER_TOKEN="seu_user_token"
 export NVOIP_OAUTH_CLIENT_ID="seu_client_id"
 export NVOIP_OAUTH_CLIENT_SECRET="seu_client_secret"
 export NVOIP_TARGET_NUMBER="11999999999"

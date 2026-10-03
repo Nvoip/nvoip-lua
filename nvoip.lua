@@ -45,14 +45,14 @@ Client.__index = Client
 function Client:new(config)
   config = config or {}
   return setmetatable({
-    base_url = (config.base_url or "https://api.nvoip.com.br/v2"):gsub("/+$", ""),
+    base_url = (config.base_url or "https://api.nvoip.com.br/v3"):gsub("/+$", ""),
     oauth_client_id = config.oauth_client_id,
     oauth_client_secret = config.oauth_client_secret,
   }, self)
 end
 
 function Client.encode_basic_auth(client_id, client_secret)
-  return base64_encode(client_id .. ":" .. client_secret)
+  return base64_encode(urlencode(client_id) .. ":" .. urlencode(client_secret))
 end
 
 function Client:_resolve_basic_auth()
@@ -63,12 +63,10 @@ function Client:_resolve_basic_auth()
   error("Missing OAuth client credentials. Configure oauth_client_id + oauth_client_secret.", 2)
 end
 
-function Client:create_access_token(numbersip, user_token)
-  return self:_request("POST", "/oauth/token", {
+function Client:create_access_token()
+  return self:_request("POST", "https://api.nvoip.com.br/auth/oauth2/token", {
     body = encode_query({
-      username = numbersip,
-      password = user_token,
-      grant_type = "password",
+      grant_type = "client_credentials",
     }),
     headers = {
       ["Authorization"] = "Basic " .. self:_resolve_basic_auth(),
@@ -78,7 +76,7 @@ function Client:create_access_token(numbersip, user_token)
 end
 
 function Client:refresh_access_token(refresh_token)
-  return self:_request("POST", "/oauth/token", {
+  return self:_request("POST", "https://api.nvoip.com.br/auth/oauth2/token", {
     body = encode_query({
       grant_type = "refresh_token",
       refresh_token = refresh_token,
@@ -101,7 +99,6 @@ end
 function Client:send_sms(options)
   return self:_request("POST", "/sms", {
     access_token = options.access_token,
-    napikey = options.napikey,
     json = {
       numberPhone = options.number_phone,
       message = options.message,
@@ -134,13 +131,12 @@ function Client:send_otp(options)
 
   return self:_request("POST", "/otp", {
     access_token = options.access_token,
-    napikey = options.napikey,
     json = payload,
   })
 end
 
-function Client:check_otp(code, key)
-  return self:_request("GET", "/check/otp?code=" .. urlencode(code) .. "&key=" .. urlencode(key), {})
+function Client:check_otp(access_token, code, key)
+  return self:_request("GET", "/check/otp?code=" .. urlencode(code) .. "&key=" .. urlencode(key), { access_token = access_token })
 end
 
 function Client:list_whatsapp_templates(access_token)
@@ -208,11 +204,7 @@ end
 
 function Client:_request(method, path, options)
   options = options or {}
-  local url = self.base_url .. path
-  if options.napikey then
-    local separator = string.find(url, "?", 1, true) and "&" or "?"
-    url = url .. separator .. encode_query({ napikey = options.napikey })
-  end
+  local url = string.match(path, "^https?://") and path or self.base_url .. path
 
   local response_chunks = {}
   local body = options.body
