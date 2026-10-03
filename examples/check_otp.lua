@@ -2,7 +2,7 @@ local nvoip = require("nvoip")
 local cjson = require("cjson.safe")
 
 local client = nvoip.new({
-  base_url = os.getenv("NVOIP_BASE_URL") or "https://api.nvoip.com.br/v2",
+  base_url = os.getenv("NVOIP_BASE_URL") or "https://api.nvoip.com.br/v3",
 })
 
 local response = client:check_otp(
