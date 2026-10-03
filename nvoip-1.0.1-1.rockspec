@@ -1,9 +1,9 @@
 package = "nvoip"
-version = "1.0.0-1"
+version = "1.0.1-1"
 
 source = {
   url = "git+https://github.com/Nvoip/nvoip-lua.git",
-  tag = "v1.0.0"
+  tag = "v1.0.1"
 }
 
 description = {
