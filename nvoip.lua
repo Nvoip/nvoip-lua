@@ -52,7 +52,7 @@ function Client:new(config)
 end
 
 function Client.encode_basic_auth(client_id, client_secret)
-  return base64_encode(client_id .. ":" .. client_secret)
+  return base64_encode(urlencode(client_id) .. ":" .. urlencode(client_secret))
 end
 
 function Client:_resolve_basic_auth()
