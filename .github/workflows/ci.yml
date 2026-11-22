@@ -23,6 +23,8 @@ jobs:
       - uses: leafo/gh-actions-luarocks@4c082a5fad45388feaeb0798dbd82dbd7dc65bca # v5
         with:
           luaRocksVersion: "3.13.0"
+      - run: luarocks make --local
       - run: lua -e "assert(loadfile('nvoip.lua'))"
       - run: for file in examples/*.lua; do lua -e "assert(loadfile('$file'))"; done
       - run: lua tests/transport.lua
+      - run: bash tests/tls_integration.sh

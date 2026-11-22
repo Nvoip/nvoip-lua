@@ -1,6 +1,157 @@
 local https = require("ssl.https")
+local http = require("socket.http")
 local ltn12 = require("ltn12")
 local cjson = require("cjson.safe")
+
+local DEFAULT_CA_FILES = {
+  "/etc/ssl/cert.pem",
+  "/etc/ssl/certs/ca-certificates.crt",
+  "/etc/pki/tls/certs/ca-bundle.crt",
+  "/etc/ssl/ca-bundle.pem",
+  "/usr/local/share/certs/ca-root-nss.crt",
+  "/opt/homebrew/etc/ca-certificates/cert.pem",
+  "/usr/local/etc/ca-certificates/cert.pem",
+}
+
+local function readable_file(path)
+  if not path or path == "" then
+    return false
+  end
+  local file = io.open(path, "rb")
+  if not file then
+    return false
+  end
+  file:close()
+  return true
+end
+
+local function resolve_ca_locations(cafile, capath)
+  local configured_cafile = cafile
+  local configured_capath = capath
+  if not configured_cafile or configured_cafile == "" then
+    configured_cafile = os.getenv("SSL_CERT_FILE")
+  end
+  if not configured_capath or configured_capath == "" then
+    configured_capath = os.getenv("SSL_CERT_DIR")
+  end
+
+  if configured_cafile and configured_cafile ~= "" then
+    if not readable_file(configured_cafile) then
+      error("TLS CA file is not readable: " .. configured_cafile, 3)
+    end
+    return configured_cafile, configured_capath
+  end
+
+  for _, candidate in ipairs(DEFAULT_CA_FILES) do
+    if readable_file(candidate) then
+      return candidate, configured_capath
+    end
+  end
+
+  if configured_capath and configured_capath ~= "" then
+    return nil, configured_capath
+  end
+
+  error("No TLS CA trust store found. Configure cafile/capath or SSL_CERT_FILE/SSL_CERT_DIR.", 3)
+end
+
+local function normalized_hostname(value)
+  local hostname = string.lower(tostring(value or ""))
+  return (hostname:gsub("%.$", ""))
+end
+
+local function is_ip_address(hostname)
+  if hostname:find(":", 1, true) then
+    return true
+  end
+
+  local parts = { hostname:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$") }
+  if #parts ~= 4 then
+    return false
+  end
+  for _, part in ipairs(parts) do
+    if tonumber(part) > 255 then
+      return false
+    end
+  end
+  return true
+end
+
+local function dns_name_matches(pattern, hostname)
+  pattern = normalized_hostname(pattern)
+  hostname = normalized_hostname(hostname)
+  if pattern:find("%z") or hostname:find("%z") then
+    return false
+  end
+  if pattern == hostname then
+    return true
+  end
+  local wildcard_suffix = pattern:sub(3)
+  if pattern:sub(1, 2) ~= "*."
+      or wildcard_suffix:find("*", 1, true)
+      or not wildcard_suffix:find(".", 1, true) then
+    return false
+  end
+
+  local suffix = pattern:sub(2)
+  if hostname:sub(-#suffix) ~= suffix then
+    return false
+  end
+  local leftmost = hostname:sub(1, #hostname - #suffix)
+  return leftmost ~= "" and not leftmost:find(".", 1, true)
+end
+
+local function certificate_matches_hostname(certificate, hostname)
+  if not certificate or type(certificate.extensions) ~= "function" then
+    return false, "peer certificate does not expose subjectAltName"
+  end
+
+  local ok, extensions = pcall(certificate.extensions, certificate)
+  local subject_alt_name = ok and extensions and extensions["2.5.29.17"]
+  if not subject_alt_name then
+    return false, "peer certificate has no subjectAltName"
+  end
+
+  hostname = normalized_hostname(hostname)
+  if is_ip_address(hostname) then
+    for _, address in ipairs(subject_alt_name.iPAddress or {}) do
+      if normalized_hostname(address) == hostname then
+        return true
+      end
+    end
+    return false, "IP address is not present in subjectAltName"
+  end
+
+  for _, dns_name in ipairs(subject_alt_name.dNSName or {}) do
+    if dns_name_matches(dns_name, hostname) then
+      return true
+    end
+  end
+  return false, "DNS name is not present in subjectAltName"
+end
+
+local function verified_tcp(params)
+  local create_tls_connection = https.tcp(params)
+  return function()
+    local connection = create_tls_connection()
+    local connect = connection.connect
+    function connection:connect(host, port)
+      local connected, connection_error = connect(self, host, port)
+      if not connected then
+        return connected, connection_error
+      end
+
+      local certificate = self:getpeercertificate()
+      local matches, reason = certificate_matches_hostname(certificate, host)
+      if not matches then
+        pcall(function() self:close() end)
+        error("TLS hostname verification failed for " .. tostring(host) .. ": " .. reason, 0)
+      end
+      return 1
+    end
+    return connection
+  end
+end
 
 local function base64_encode(input)
   local alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
@@ -48,6 +199,8 @@ function Client:new(config)
     base_url = (config.base_url or "https://api.nvoip.com.br/v3"):gsub("/+$", ""),
     oauth_client_id = config.oauth_client_id,
     oauth_client_secret = config.oauth_client_secret,
+    cafile = config.cafile,
+    capath = config.capath,
   }, self)
 end
 
@@ -204,7 +357,19 @@ end
 
 function Client:_request(method, path, options)
   options = options or {}
-  local url = string.match(path, "^https?://") and path or self.base_url .. path
+  local scheme = string.match(path, "^([%a][%w+.-]*):")
+  if scheme and string.lower(scheme) ~= "https" then
+    error("Nvoip SDK only permits HTTPS requests", 2)
+  end
+  local url = scheme and path or self.base_url .. path
+  if string.lower(url:sub(1, 8)) ~= "https://" then
+    error("Nvoip SDK only permits HTTPS requests", 2)
+  end
+  if http.PROXY then
+    error("HTTPS proxy is not supported", 2)
+  end
+
+  local cafile, capath = resolve_ca_locations(self.cafile, self.capath)
 
   local response_chunks = {}
   local body = options.body
@@ -223,20 +388,29 @@ function Client:_request(method, path, options)
     headers["Content-Length"] = tostring(#body)
   end
 
-  local ok, status_code = https.request({
+  local request_options = {
     url = url,
     method = method,
     headers = headers,
     source = body and ltn12.source.string(body) or nil,
     sink = ltn12.sink.table(response_chunks),
     protocol = "tlsv1_2",
-  })
+    verify = "peer",
+    cafile = cafile,
+    capath = capath,
+  }
+  request_options.create = verified_tcp(request_options)
+
+  local ok, status_code = http.request(request_options)
 
   local raw = table.concat(response_chunks)
   local decoded = cjson.decode(raw)
   local payload = decoded or { raw = raw }
 
-  if not ok or (status_code and status_code >= 400) then
+  if not ok then
+    error(("Nvoip request failed: %s"):format(tostring(status_code)), 2)
+  end
+  if tonumber(status_code) and tonumber(status_code) >= 400 then
     error(("Nvoip request failed with status %s: %s"):format(tostring(status_code), raw), 2)
   end
 

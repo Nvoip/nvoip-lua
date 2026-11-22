@@ -8,7 +8,7 @@ SDK e exemplos oficiais da [Nvoip](https://www.nvoip.com.br/) para integrar a AP
 
 Pacotes recomendados via LuaRocks:
 
-- `luasec`
+- `luasec >= 1.3.2`
 - `lua-cjson`
 
 ## Instalacao
@@ -37,6 +37,22 @@ export NVOIP_OAUTH_CLIENT_SECRET="seu_client_secret"
 export NVOIP_TARGET_NUMBER="11999999999"
 export NVOIP_SMS_MESSAGE="Mensagem de teste Nvoip"
 ```
+
+O SDK valida a cadeia e o `subjectAltName` do certificado TLS antes de enviar a
+requisição. Em Linux, macOS e BSD ele procura os bundles de CA usuais do
+sistema. Em ambientes com store próprio (incluindo Windows), configure
+`SSL_CERT_FILE`/`SSL_CERT_DIR` ou informe `cafile`/`capath` ao criar o cliente:
+
+```lua
+local client = require("nvoip").new({
+  oauth_client_id = os.getenv("NVOIP_OAUTH_CLIENT_ID"),
+  oauth_client_secret = os.getenv("NVOIP_OAUTH_CLIENT_SECRET"),
+  cafile = os.getenv("NVOIP_CA_FILE"),
+})
+```
+
+O transporte recusa HTTP, certificado de CA desconhecida, nome DNS/IP divergente
+e certificado sem `subjectAltName`; não há fallback inseguro para o CN.
 
 ## Exemplos
 

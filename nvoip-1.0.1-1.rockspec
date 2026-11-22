@@ -16,7 +16,7 @@ description = {
 dependencies = {
   "lua >= 5.1",
   "lua-cjson",
-  "luasec",
+  "luasec >= 1.3.2",
   "luasocket"
 }
 
